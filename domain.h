@@ -4,3 +4,7 @@ struct med {
 	int quantity;
 	float concentration;
 };
+struct undostack {
+	char* command;
+	undostack* next;
+};

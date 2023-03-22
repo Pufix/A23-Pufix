@@ -4,6 +4,10 @@
 #include<cstring>
 #define _CRT_SECURE_NO_WARNINGS 1
 #include "domain.h"
+
+#define normal 1
+#define undoAction 2
+#define redoAction 3
 struct repository {
 	med* medicine;
 	int length;
@@ -26,7 +30,7 @@ void deleteRepo(struct repository* repo) {
 	free(repo);
 }
 
-void repoaddMedicine(repository* repo, char* name, int price, int quantity, float concentration) {
+bool repoaddMedicine(repository* repo, char* name, int price, int quantity, float concentration) {
 	if (repo->length == repo->capacity) {
 		repo->capacity *= 2;
 		repo->medicine = (struct med*)realloc(repo->medicine, sizeof(struct med) * repo->capacity);
@@ -47,8 +51,17 @@ void repoaddMedicine(repository* repo, char* name, int price, int quantity, floa
 		repo->medicine[repo->length].concentration = concentration;
 		repo->length++;
 	}
+	return found;
 }
 
+med* getMedicine(struct repository* repo, char* name, float concentration) {
+	for (int i = 0; i < repo->length; i++) {
+		if (strcmp(repo->medicine[i].name, name) == 0 && repo->medicine[i].concentration == concentration) {
+			return &repo->medicine[i];
+		}
+	}
+	return NULL;
+}
 
 med* getAllMedicines(struct repository* repo, int* len) {
 	*len = repo->length;
