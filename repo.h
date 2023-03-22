@@ -4,7 +4,6 @@
 #include<cstring>
 #define _CRT_SECURE_NO_WARNINGS 1
 #include "domain.h"
-
 #define normal 1
 #define undoAction 2
 #define redoAction 3
@@ -15,6 +14,7 @@ struct repository {
 };
 
 repository* createRepo() {
+	// here we allocate memory for the repository
 	repository* repo = (repository*)malloc(sizeof(struct repository));
 	repo->medicine = (struct med*)malloc(sizeof(struct med) * 10);
 	repo->length = 0;
@@ -23,6 +23,7 @@ repository* createRepo() {
 }
 
 void deleteRepo(struct repository* repo) {
+	// here we free the memory allocated for the repository
 	for (int i = 0; i < repo->length; i++) {
 		free(repo->medicine[i].name);
 	}
@@ -31,6 +32,7 @@ void deleteRepo(struct repository* repo) {
 }
 
 bool repoaddMedicine(repository* repo, char* name, int price, int quantity, float concentration) {
+	// here we add a medicine to the repository
 	if (repo->length == repo->capacity) {
 		repo->capacity *= 2;
 		repo->medicine = (struct med*)realloc(repo->medicine, sizeof(struct med) * repo->capacity);
@@ -54,7 +56,8 @@ bool repoaddMedicine(repository* repo, char* name, int price, int quantity, floa
 	return found;
 }
 
-med* getMedicine(struct repository* repo, char* name, float concentration) {
+med* getMedicine(struct repository* repo, char* name, float concentration) {\
+	// here we get a medicine from the repository
 	for (int i = 0; i < repo->length; i++) {
 		if (strcmp(repo->medicine[i].name, name) == 0 && repo->medicine[i].concentration == concentration) {
 			return &repo->medicine[i];
@@ -64,11 +67,13 @@ med* getMedicine(struct repository* repo, char* name, float concentration) {
 }
 
 med* getAllMedicines(struct repository* repo, int* len) {
+	// here we get all the medicines from the repository
 	*len = repo->length;
 	return repo->medicine;
 }
 
 bool repoDeleteMedicine(struct repository* repo, char* name, float concentration) {
+	// here we delete a medicine from the repository
 	for (int i = 0; i < repo->length; i++) {
 		if (strcmp(repo->medicine[i].name, name) == 0 && repo->medicine[i].concentration == concentration) {
 			free(repo->medicine[i].name);
@@ -84,6 +89,7 @@ bool repoDeleteMedicine(struct repository* repo, char* name, float concentration
 }
 
 bool repoUpdateMedicine(struct repository* repo, char* name, int price, int quantity, float concentration) {
+	// here we update a medicine from the repository
 	for (int i = 0; i < repo->length; i++) {
 		if (strcmp(repo->medicine[i].name, name) == 0 && concentration == repo->medicine[i].concentration) {
 			repo->medicine[i].price = price;

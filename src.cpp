@@ -49,12 +49,19 @@ void initialData() {
 	commandHandling("add paracetamol 27 100 20", normal);
 	commandHandling("add paracetamol 27 100 10", normal);
 	commandHandling("add lisinopril 30 10 5.5", normal);
+	commandHandling("add coldrex 10 100 20", normal);
+	commandHandling("add theraflu 10 100 20", normal);
+	commandHandling("add paracetamol 27 100 20", normal);
+	commandHandling("add potato oil 10 11 6969.6969", normal);
+	commandHandling("add carrot pills 10 11 6969.6969", normal);
+	commandHandling("add onion rings 12 34 56",normal);
+
 }
 int main() {
 	makeRepo();
 	initialData();
 	loop();
-	//char *DummyLeak = (char*)malloc(100);
 	printf("\n\n\n\nLEAKS: %d \n\n\n\n\n\n",_CrtDumpMemoryLeaks());
+	//testAll();
 	return 0;
 }

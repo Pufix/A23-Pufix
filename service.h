@@ -3,6 +3,7 @@
 #include<string.h>
 #include"repo.h"
 #include <alg.h>
+#include <cassert>
 #define elif else if
 #define _CRT_SECURE_NO_WARNINGS 1
 struct repository* repo = NULL;
@@ -10,29 +11,34 @@ struct undostack* undoStack = NULL;
 struct undostack* redoStack = NULL;
 
 void undoStackPush(char* command) {
+	//here i add commands to the undo stack
 	undostack* temp = (undostack*)malloc(sizeof(undostack));
 	temp->command = command;
 	temp->next = undoStack;
 	undoStack = temp;
-}void redoStackPush(char* command) {
+}void redoStackPush(char* command) {\
+//here i add commands to the redo stack
 	undostack* temp = (undostack*)malloc(sizeof(undostack));
 	temp->command = command;
 	temp->next = redoStack;
 	redoStack = temp;
 }
 void undoStackPop() {
+	//here i pop commands from the undo stack
 	undostack* temp = undoStack;
 	undoStack = undoStack->next;
 	free(temp->command);
 	free(temp);
 }
 void redoStackPop() {
+	//here i pop commands from the redo stack
 	undostack* temp = redoStack;
 	redoStack = redoStack->next;
 	free(temp->command);
 	free(temp);
 }
 void clearRedo() {
+	// here i clear the redo stack
 	while (redoStack != NULL) 
 		redoStackPop();
 }
@@ -45,6 +51,7 @@ int comp(const void* elem1, const void* elem2) {
 	return (strcmp(f.name, s.name));
 }
 const char* servAdd(char command[],int opStyle) {
+	// here i add a medicine to the repository
 	int indexStartFloat = 0;
 	int j;
 	if (command[3] != ' ')
@@ -143,10 +150,10 @@ const char* servAdd(char command[],int opStyle) {
 		strcpy(undoCommand, "del ");
 		strcat(undoCommand, name);
 		strcat(undoCommand, command + indexStartFloat);
-		if (opStyle == 1)
+		if (opStyle == normal)
 			undoStackPush(undoCommand),
 			clearRedo();
-		else if (opStyle == 2)
+		else if (opStyle == undoAction)
 			redoStackPush(undoCommand);
 		else
 			undoStackPush(undoCommand);
@@ -156,6 +163,7 @@ const char* servAdd(char command[],int opStyle) {
 }
 const char* commandHandling(char command[], int opStyle);
 const char* servFilter(char command[]) {
+	// here i filter the medicines by stock
 	for (int i = 7; i < strlen(command); i++) {
 		if (command[i]<'0'||command[i]>'9')
 			return "filter - filter medicines by low stock: filter <stock>\n";
@@ -200,6 +208,7 @@ const char* servFilter(char command[]) {
 	return res;
 }
 const char* servRedo(char command[]) {
+	// here i redo the last operation
 	if (redoStack == NULL) {
 		return "No more redos!\n";
 	}
@@ -211,6 +220,7 @@ const char* servRedo(char command[]) {
 	return "\n";
 }
 const char* servUndo(char command[]) { 
+	// here i undo the last operation
 	if (undoStack == NULL) {
 		return "No more undos!\n";
 	}
@@ -221,9 +231,8 @@ const char* servUndo(char command[]) {
 	free(temp);
 	return "\n";
 }
-const char* servSearch(char command[]) { return "Not implemented yet!"; }
 const char* servList(char command[]) {
-	//printf("%s", "list - list all medicines: list\n");
+	// here i list all the medicines
 	int* temp = (int*)malloc(sizeof(int));
 	med* meds = getAllMedicines(repo, temp);
 	int len = temp[0];
@@ -285,6 +294,7 @@ const char* servList(char command[]) {
 	return res;
 }
 const char* servDel(char command[], int opType) {
+	// here i delete a medicine
 	if (command[3] == '\0')
 		return "del - delete a medicine: del <name> <concentration>\n";
 	int i = 3, start = 4, j;
@@ -354,6 +364,7 @@ const char* servDel(char command[], int opType) {
 	return "\n";
 }
 const char* servUpd(char command[],int opType) {
+	// here i update a medicine
 	if (command[3] == '\0')
 		return "update - update a medicine: upd <name> <concentration> <new price> <new quantity> \n";
 
@@ -426,7 +437,7 @@ const char* servUpd(char command[],int opType) {
 	strcat(cmd, "upd ");
 	strcat(cmd, medicine->name);
 	strcat(cmd, " ");
-	command[endfloat]= '\0';
+	command[endfloat-1]= '\0';
 	strcat(cmd, command + startfloat);
 	strcat(cmd, " ");
 	char buffer[100];
@@ -446,6 +457,7 @@ const char* servUpd(char command[],int opType) {
 	return "Medicine updated!\n";
 }
 void clearing() {
+	// here i clear the allocated memory
 	deleteRepo(repo);
 	while (undoStack != NULL)
 		undoStackPop();
@@ -453,6 +465,7 @@ void clearing() {
 		redoStackPop();
 }
 const char* commandHandling(char command[],int opStyle) {
+	// here i handle the commands
 	if (strchr(command, '-') != NULL)
 		return "Invalid command syntax!\n";
 	if (command[0] == 'a' && command[1] == 'd' && command[2] == 'd') 
@@ -471,4 +484,66 @@ const char* commandHandling(char command[],int opStyle) {
 		return servFilter(command);
 	else return "No command found!\n";
 
+}
+// test all the functions
+
+
+void testAdd() {
+	// here i test the add function
+	repo = createRepo();
+	commandHandling("add paracetamol 10 10", normal);
+	assert (repo->length == 0);
+	commandHandling("add paracetamol 10 10 10", normal);
+	assert (repo->length == 1);
+	commandHandling("add paracetamol 10 10 10", normal);
+	assert (repo->length == 1);
+	commandHandling("add paracetamol 10 10 12", normal);
+	assert (repo->length == 2);
+}
+void testDelete() {
+	repo = createRepo();
+	commandHandling("add paracetamol 10 10", normal);
+	commandHandling("add paracetamol 10 10 10", normal);
+	commandHandling("add paracetamol 10 10 10", normal);
+	commandHandling("add paracetamol 10 10 12", normal);
+	commandHandling("del paracetamol 10", normal);
+	assert (repo->length == 1);
+	commandHandling("del paracetamol 10", normal);
+	assert (repo->length == 1);
+}
+void testUpdate() {
+	// here i test the update function
+	char command[100];
+	repo = createRepo();
+	commandHandling("add paracetamol 10 10 10", normal);
+	commandHandling("add paracetamol 10 10 10", normal);
+	commandHandling("add paracetamol 10 10 12", normal);
+	strcpy(command,"upd paracetamol 12 34 56");
+	commandHandling(command, normal);
+	assert (repo->medicine[0].quantity == 20);
+	strcpy(command, "upd paracetamol 10 30 30");
+	commandHandling(command, normal);
+	assert (repo->medicine[0].quantity == 30);
+}
+void testUndo() {
+	repo = createRepo();
+	commandHandling("add paracetamol 10 10 10", normal);
+	commandHandling("undo", normal);
+	assert(repo->length == 0);
+}
+void testRedo() {
+	repo = createRepo();
+	commandHandling("add paracetamol 10 10 10", normal);
+	commandHandling("undo", normal);
+	commandHandling("redo", normal);
+	assert(repo->length == 1);
+
+}
+void testAll() {
+	// here i test all the functions
+	testAdd();
+	testDelete();
+	testUpdate();
+	testUndo();
+	testRedo();
 }
